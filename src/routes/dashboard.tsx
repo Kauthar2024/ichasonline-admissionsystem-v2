@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen }  from 'lucide-react';
+import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen, Send }  from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -11,6 +11,7 @@ const NAV = [
   { label: 'Study Plan', icon: <BookOpen />, path: '/study-plan' },
   { label: 'Student Application', icon: <BookOpen />, path: '/education' },
   { label: 'Payments', icon: <DollarSign />, path: '/payments'},
+  { label: 'Submit Application', icon: <Send />, path: '/submit-application' },
   { label: 'Change Password', icon: <LockKeyholeOpen /> },
 ];
 
@@ -25,6 +26,7 @@ export function DashboardPage() {
 
   return (
     <div className="w-full min-h-screen flex-1 bg-green-200 flex items-center justify-center p-4 md:p-8">
+     
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
         {/* Sidebar */}
         <aside className="w-full md:w-64 bg-gray-900 text-white flex flex-col justify-between p-4 border-r border-gray-800">
@@ -94,3 +96,4 @@ export function DashboardPage() {
     </div>
   );
 }
+

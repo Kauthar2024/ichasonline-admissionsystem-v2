@@ -1,10 +1,18 @@
 import React from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen , Columns3 , CircleAlert , FileQuestionMark, UserRound } from 'lucide-react';
+import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen , Columns3 , CircleAlert , FileQuestionMark, UserRound , Check} from 'lucide-react';
 
 export const Route = createFileRoute('/study-plan')({ 
   component: RouteComponent });
 
+  const STEPS = [
+  { name: '1. Dashboard', path: '/dashboard', done: true },
+  { name: '2. Education', path: '/education', active: true },
+  { name: '3. Programmes', path: '/programmes' },
+  { name: '4. Personal', path: '/personal-info' },
+  { name: '5. Payments', path: '/payments' },
+  { name: '6. Submit', path: '/submit-application' },
+];
 const ChoiceSelect = ({ label, badgeText, badgeColor }: { label: string; badgeText: string; badgeColor: string }) => (
   <div className="space-y-1">
     <div className="flex items-center gap-2">
@@ -14,16 +22,10 @@ const ChoiceSelect = ({ label, badgeText, badgeColor }: { label: string; badgeTe
     <select className="w-full p-2 border rounded text-xs bg-white focus:ring-1 focus:ring-slate-500">
       <option value="">Select Qualification Type</option>
       <option value="diploma">Diploma</option>
-      <option value="degree">Bachelor Degree</option>
+      <option value="degree">Certificate </option>
     </select>
   </div>
 );
-
-// const NavLink = ({ to, label, icon, active = false }: { to: string; label: string; icon: string; active?: boolean }) => (
-//   <Link to={to as any} className={`block p-2 rounded ${active ? 'bg-slate-900 font-semibold border-l-4 border-purple-500' : 'hover:bg-slate-700'}`}>
-//     {icon} {label}
-//   </Link>
-// );
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -81,12 +83,13 @@ function RouteComponent() {
                    </div>
                  </aside>
 
-        <main className="flex-1 p-6 space-y-5">
-          <div className="grid grid-cols-6 gap-2 text-center text-[11px]">
-            {['✓ 1. Dashboard', '✓ 2. Education', '3. Programmes', '4. Personal', '5. Payments', '6. Submit'].map((step, i) => (
-              <div key={step} className={`p-2 rounded ${i < 2 ? 'bg-emerald-100 text-emerald-800 font-medium' : i === 2 ? 'bg-slate-800 text-white font-bold' : 'bg-white text-gray-500'}`}>
-                {step}
-              </div>
+        {/* <main className="flex-1 p-6 space-y-5"> */}
+         <main className="flex-1 p-6 bg-green-200 overflow-y-auto space-y-6">
+          <div className="grid grid-cols-6 gap-2 bg-white p-2 rounded shadow-sm text-center font-semibold text-[11px]">
+            {STEPS.map((s) => (
+              <button key={s.name} onClick={() => navigate({ to: s.path as any })} className={`py-2 rounded flex items-center justify-center gap-1 ${s.active ? 'bg-slate-800 text-white' : s.done ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                {s.done && <Check className="w-3.5 h-3.5" />}{s.name}
+              </button>
             ))}
           </div>
 

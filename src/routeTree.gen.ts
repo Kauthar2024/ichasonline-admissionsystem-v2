@@ -16,8 +16,10 @@ import { Route as EducationRouteImport } from './routes/education'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PersonalInfoRouteImport } from './routes/personal-info'
+import { Route as ProgrammesRouteImport } from './routes/programmes'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as StudyPlanRouteImport } from './routes/study-plan'
+import { Route as SubmitApplicationRouteImport } from './routes/submit-application'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -54,6 +56,11 @@ const PersonalInfoRoute = PersonalInfoRouteImport.update({
   path: '/personal-info',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgrammesRoute = ProgrammesRouteImport.update({
+  id: '/programmes',
+  path: '/programmes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegistrationRoute = RegistrationRouteImport.update({
   id: '/registration',
   path: '/registration',
@@ -62,6 +69,11 @@ const RegistrationRoute = RegistrationRouteImport.update({
 const StudyPlanRoute = StudyPlanRouteImport.update({
   id: '/study-plan',
   path: '/study-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubmitApplicationRoute = SubmitApplicationRouteImport.update({
+  id: '/submit-application',
+  path: '/submit-application',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -73,8 +85,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/personal-info': typeof PersonalInfoRoute
+  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
+  '/submit-application': typeof SubmitApplicationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -84,8 +98,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/personal-info': typeof PersonalInfoRoute
+  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
+  '/submit-application': typeof SubmitApplicationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -96,8 +112,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/personal-info': typeof PersonalInfoRoute
+  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
+  '/submit-application': typeof SubmitApplicationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,8 +127,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/payments'
     | '/personal-info'
+    | '/programmes'
     | '/registration'
     | '/study-plan'
+    | '/submit-application'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,8 +140,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/payments'
     | '/personal-info'
+    | '/programmes'
     | '/registration'
     | '/study-plan'
+    | '/submit-application'
   id:
     | '__root__'
     | '/'
@@ -131,8 +153,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/payments'
     | '/personal-info'
+    | '/programmes'
     | '/registration'
     | '/study-plan'
+    | '/submit-application'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -143,8 +167,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PaymentsRoute: typeof PaymentsRoute
   PersonalInfoRoute: typeof PersonalInfoRoute
+  ProgrammesRoute: typeof ProgrammesRoute
   RegistrationRoute: typeof RegistrationRoute
   StudyPlanRoute: typeof StudyPlanRoute
+  SubmitApplicationRoute: typeof SubmitApplicationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -198,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonalInfoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/programmes': {
+      id: '/programmes'
+      path: '/programmes'
+      fullPath: '/programmes'
+      preLoaderRoute: typeof ProgrammesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/registration': {
       id: '/registration'
       path: '/registration'
@@ -212,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudyPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/submit-application': {
+      id: '/submit-application'
+      path: '/submit-application'
+      fullPath: '/submit-application'
+      preLoaderRoute: typeof SubmitApplicationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -223,8 +263,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PaymentsRoute: PaymentsRoute,
   PersonalInfoRoute: PersonalInfoRoute,
+  ProgrammesRoute: ProgrammesRoute,
   RegistrationRoute: RegistrationRoute,
   StudyPlanRoute: StudyPlanRoute,
+  SubmitApplicationRoute: SubmitApplicationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
