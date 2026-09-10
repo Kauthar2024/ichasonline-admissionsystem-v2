@@ -7,7 +7,7 @@ export const Route = createFileRoute('/')({
 function IndexPage() {
   return (
     <div className="w-full py-10 bg-gray-50 flex flex-col items-center justify-center ">
-      <div className="bg-blue-500 p-8 rounded-xl border border-gray-200 shadow-sm max-w-md w-full text-center space-y-6">
+      <div className="bg-green-200 p-8 rounded-xl border border-gray-200 shadow-sm max-w-md w-full text-center space-y-6">
         <div>
           <h2 className="text-1xl font-bold text-gray-900">
             Imperial College of Health and Allied Science

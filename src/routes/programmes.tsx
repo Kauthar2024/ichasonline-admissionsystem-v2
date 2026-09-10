@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Sparkles } from 'lucide-react';
 
@@ -9,7 +9,7 @@ export const Route = createFileRoute('/programmes')({
 // Mock available programmes list
 const PROGRAMMES = [
   { id: '1', code: 'DNM', name: 'Diploma In Nursing And Midwifery', duration: '4 Years', type: 'Diploma' },
-  { id: '2', code: 'CPS', name: 'Certificate Pharmaceutical Science', duration: '3 Years', type: 'Degree' },
+  { id: '2', code: 'CPS', name: 'Certificate Pharmaceutical Science', duration: '3 Years', type: 'Certificate' },
   { id: '3', code: 'DCD', name: 'Diploma In Clinical Dentistry', duration: '3 Years', type: 'Diploma' },
   
 
