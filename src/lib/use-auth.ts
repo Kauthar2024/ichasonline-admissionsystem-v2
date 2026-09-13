@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { loginUser, fetchUserProfile } from './auth-api';
 import type { LoginCredentials, AuthResponse } from './auth-api';
 import { registerUser } from './auth-api';
-import type { RegisterCredentials, RegisterResponse } from './auth-api';
+import type { RegisterCredentials } from './auth-api';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
