@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check } from 'lucide-react';
+import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Upload, FileCheck, AlertCircle } from 'lucide-react';
 
 export const Route = createFileRoute('/education')({ component: EducationPage });
 
 interface Subject { no: number; name: string; grade: string; points: number; }
 const GRADE_MAP: Record<string, number> = { A: 1, B: 2, C: 3, D: 4, F: 5 };
-const SUBJECTS = ['Civics', 'History', 'Geography', 'Elimu ya Dini ya Kiislamu', 'Kiswahili', 'English', 'Biology', 'Basic Mathematics', 'Commerce', 'Book Keeping'];
+
+// Sample preset result grades returned upon fetching official NECTA records
+const INITIAL_SUBJECT_RESULTS = [
+  { name: 'Civics', grade: 'B' },
+  { name: 'History', grade: 'C' },
+  { name: 'Geography', grade: 'B' },
+  { name: 'Elimu ya Dini ya Kiislamu', grade: 'A' },
+  { name: 'Kiswahili', grade: 'A' },
+  { name: 'English', grade: 'B' },
+  { name: 'Biology', grade: 'C' },
+  { name: 'Basic Mathematics', grade: 'C' },
+  { name: 'Commerce', grade: 'B' },
+  { name: 'Book Keeping', grade: 'C' },
+];
 
 const STEPS = [
   { name: '1. Dashboard', path: '/dashboard', done: true },
@@ -30,19 +43,48 @@ export function EducationPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ indexNumber: '', examYear: '', submitted: false });
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  
+  // File state & validation state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isValidResultDoc, setIsValidResultDoc] = useState<boolean>(false);
 
   const handleFetch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.indexNumber || !form.examYear) return;
-    setSubjects(SUBJECTS.map((name, i) => ({ no: i + 1, name, grade: '', points: 0 })));
+    
+    // Automatically populate subjects structure
+    setSubjects(
+      INITIAL_SUBJECT_RESULTS.map((item, i) => ({
+        no: i + 1,
+        name: item.name,
+        grade: item.grade,
+        points: GRADE_MAP[item.grade] || 0,
+      }))
+    );
     setForm((p) => ({ ...p, submitted: true }));
   };
 
-  const updateGrade = (idx: number, grade: string) => {
-    setSubjects((prev) => prev.map((s, i) => i === idx ? { ...s, grade, points: GRADE_MAP[grade] || 0 } : s));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setUploadedFile(file);
+
+      // Simple validation logic checking file name keywords for NECTA/Result Slip
+      const fileNameLower = file.name.toLowerCase();
+      const validKeywords = ['result', 'necta', 'certificate', 'slip', 'transcript', 'matokeo'];
+      const isResultDocument = validKeywords.some((keyword) => fileNameLower.includes(keyword));
+
+      setIsValidResultDoc(isResultDocument);
+    }
   };
 
-  const totalPoints = subjects.reduce((a, b) => a + b.points, 0);
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    setIsValidResultDoc(false);
+  };
+
+  // Calculate points dynamically only if a valid result file is uploaded
+  const totalPoints = isValidResultDoc ? subjects.reduce((a, b) => a + b.points, 0) : '';
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-100 text-xs text-slate-800">
@@ -98,25 +140,71 @@ export function EducationPage() {
                 </table>
               </div>
 
+              {/* Upload Certificate / Result Slip Section */}
+              <div className="border border-slate-300 rounded overflow-hidden bg-white shadow-sm">
+                <div className="bg-slate-800 text-white font-semibold px-4 py-2">Upload Academic Document</div>
+                <div className="p-4 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                      <Upload className="w-4 h-4 text-slate-600" /> Result Slip / NECTA Certificate
+                    </span>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Please attach a clear scanned PDF or Image copy of your certificate or result slip (Max 5MB) to view and verify grades.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded text-[11px] inline-flex items-center gap-1.5 shrink-0">
+                      <Upload className="w-3.5 h-3.5" />
+                      {uploadedFile ? 'Change File' : 'Choose File'}
+                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileChange} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Status bar based on valid document check */}
+                {uploadedFile && (
+                  <div className={`px-4 py-2 border-t flex items-center justify-between text-[11px] font-medium ${isValidResultDoc ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                    <span className="flex items-center gap-1.5">
+                      {isValidResultDoc ? (
+                        <FileCheck className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      )}
+                      Selected: <strong>{uploadedFile.name}</strong> ({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      {!isValidResultDoc && <span className="text-red-600 font-bold ml-2">(Invalid Document: Please upload a valid NECTA Result Slip / Certificate)</span>}
+                    </span>
+                    <button onClick={handleRemoveFile} className="text-red-600 hover:underline font-bold">Remove</button>
+                  </div>
+                )}
+              </div>
+
               <div className="border border-slate-300 rounded overflow-hidden bg-white shadow-sm">
                 <table className="w-full text-left">
                   <thead className="bg-slate-800 text-white font-semibold">
                     <tr><th className="p-2.5 w-16">No</th><th className="p-2.5">Subject Name</th><th className="p-2.5 w-36">Grade</th><th className="p-2.5 w-32">Points</th><th className="p-2.5 w-32">Action</th></tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {subjects.map((s, i) => (
+                    {subjects.map((s) => (
                       <tr key={s.no} className="hover:bg-slate-50">
-                        <td className="p-2.5">{s.no}</td><td className="p-2.5">{s.name}</td>
-                        <td className="p-2.5">
-                          <select value={s.grade} onChange={(e) => updateGrade(i, e.target.value)} className="w-full p-1 border rounded text-xs">
-                            <option value="">-- Select --</option>
-                            {['A', 'B', 'C', 'D', 'F'].map((g) => <option key={g} value={g}>{g}</option>)}
-                          </select>
+                        <td className="p-2.5">{s.no}</td>
+                        <td className="p-2.5">{s.name}</td>
+                        <td className="p-2.5 font-bold text-slate-800">
+                          {/* Display grade badge ONLY IF a valid result document is uploaded */}
+                          {isValidResultDoc ? (
+                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded font-bold">{s.grade}</span>
+                          ) : null}
                         </td>
-                        <td className="p-2.5 font-medium">{s.points || '-'}</td><td className="p-2.5">No</td>
+                        <td className="p-2.5 font-medium">
+                          {isValidResultDoc ? s.points : ''}
+                        </td>
+                        <td className="p-2.5">No</td>
                       </tr>
                     ))}
-                    <tr className="font-semibold bg-slate-50 border-t-2"><td colSpan={3} className="p-2.5 text-right pr-4">Total Points</td><td className="p-2.5 text-emerald-700 text-sm font-bold">{totalPoints}</td><td></td></tr>
+                    <tr className="font-semibold bg-slate-50 border-t-2">
+                      <td colSpan={3} className="p-2.5 text-right pr-4">Total Points</td>
+                      <td className="p-2.5 text-emerald-700 text-sm font-bold">
+                        {totalPoints}
+                      </td>
+                      <td></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -126,7 +214,11 @@ export function EducationPage() {
               <Banner title="Equivalent Results" text="If you have Equivalent Level Results, Click Here" btnText="ADD EQUIVALENT LEVEL RESULTS" />
 
               <div className="flex justify-end pt-2">
-                <button onClick={() => navigate({ to: '/programmes' as any })} className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded shadow">
+                <button 
+                  disabled={!isValidResultDoc}
+                  onClick={() => navigate({ to: '/programmes' as any })} 
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded shadow disabled:bg-slate-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all"
+                >
                   PROCEED TO APPLICATION
                 </button>
               </div>

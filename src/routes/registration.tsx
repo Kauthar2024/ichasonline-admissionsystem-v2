@@ -110,6 +110,7 @@ export function RegisterPage() {
           disabled={isPending}
           className="w-full p-2 text-sm border rounded-lg disabled:bg-gray-100"
         />
+        <input type="text" name="EquivalentNumber" placeholder="Equivalent Number" />
 
         <input
           type="text"
@@ -167,7 +168,7 @@ export function RegisterPage() {
         />
 
         <input
-          type="password" // 🛠️ Fixed incorrect type="password2"
+          type="password" //  Fixed incorrect type="password2"
           name="password2"
           required
           placeholder="Confirm Password"
