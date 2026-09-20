@@ -10,44 +10,40 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as CoursesRouteImport } from './routes/courses'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as EducationRouteImport } from './routes/education'
+import { Route as ApplicantRouteRouteImport } from './routes/_applicant/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as OfficerRouteImport } from './routes/officer'
-import { Route as PaymentsRouteImport } from './routes/payments'
-import { Route as PersonalInfoRouteImport } from './routes/personal-info'
-import { Route as ProgrammesRouteImport } from './routes/programmes'
+import { Route as OfficerRouteRouteImport } from './routes/officer/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
-import { Route as StudyPlanRouteImport } from './routes/study-plan'
-import { Route as SubmitApplicationRouteImport } from './routes/submit-application'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as OfficerIndexRouteImport } from './routes/officer.index'
+import { Route as ApplicantCoursesRouteImport } from './routes/_applicant/courses'
+import { Route as ApplicantDashboardRouteImport } from './routes/_applicant/dashboard'
+import { Route as ApplicantEducationRouteImport } from './routes/_applicant/education'
+import { Route as ApplicantPaymentsRouteImport } from './routes/_applicant/payments'
+import { Route as ApplicantPersonalInfoRouteImport } from './routes/_applicant/personal-info'
+import { Route as ApplicantProgrammesRouteImport } from './routes/_applicant/programmes'
+import { Route as ApplicantStudyPlanRouteImport } from './routes/_applicant/study-plan'
+import { Route as ApplicantSubmitApplicationRouteImport } from './routes/_applicant/submit-application'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as OfficerIndexRouteImport } from './routes/officer/index'
+import { Route as AdminProgrammesIndexRouteImport } from './routes/admin/programmes/index'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as OfficerApplicationsIndexRouteImport } from './routes/officer/applications/index'
+import { Route as OfficerApplicationsRefRouteImport } from './routes/officer/applications/$ref'
+import { Route as OfficerNotificationsIndexRouteImport } from './routes/officer/notifications/index'
+import { Route as OfficerSelectionIndexRouteImport } from './routes/officer/selection/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
+const ApplicantRouteRoute = ApplicantRouteRouteImport.update({
+  id: '/_applicant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesRoute = CoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EducationRoute = EducationRouteImport.update({
-  id: '/education',
-  path: '/education',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -55,24 +51,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OfficerRoute = OfficerRouteImport.update({
+const OfficerRouteRoute = OfficerRouteRouteImport.update({
   id: '/officer',
   path: '/officer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PaymentsRoute = PaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PersonalInfoRoute = PersonalInfoRouteImport.update({
-  id: '/personal-info',
-  path: '/personal-info',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProgrammesRoute = ProgrammesRouteImport.update({
-  id: '/programmes',
-  path: '/programmes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegistrationRoute = RegistrationRouteImport.update({
@@ -80,143 +61,237 @@ const RegistrationRoute = RegistrationRouteImport.update({
   path: '/registration',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StudyPlanRoute = StudyPlanRouteImport.update({
+const ApplicantCoursesRoute = ApplicantCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantDashboardRoute = ApplicantDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantEducationRoute = ApplicantEducationRouteImport.update({
+  id: '/education',
+  path: '/education',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantPaymentsRoute = ApplicantPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantPersonalInfoRoute = ApplicantPersonalInfoRouteImport.update({
+  id: '/personal-info',
+  path: '/personal-info',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantProgrammesRoute = ApplicantProgrammesRouteImport.update({
+  id: '/programmes',
+  path: '/programmes',
+  getParentRoute: () => ApplicantRouteRoute,
+} as any)
+const ApplicantStudyPlanRoute = ApplicantStudyPlanRouteImport.update({
   id: '/study-plan',
   path: '/study-plan',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ApplicantRouteRoute,
 } as any)
-const SubmitApplicationRoute = SubmitApplicationRouteImport.update({
-  id: '/submit-application',
-  path: '/submit-application',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApplicantSubmitApplicationRoute =
+  ApplicantSubmitApplicationRouteImport.update({
+    id: '/submit-application',
+    path: '/submit-application',
+    getParentRoute: () => ApplicantRouteRoute,
+  } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const OfficerIndexRoute = OfficerIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => OfficerRoute,
+  getParentRoute: () => OfficerRouteRoute,
+} as any)
+const AdminProgrammesIndexRoute = AdminProgrammesIndexRouteImport.update({
+  id: '/programmes/',
+  path: '/programmes/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const OfficerApplicationsIndexRoute =
+  OfficerApplicationsIndexRouteImport.update({
+    id: '/applications/',
+    path: '/applications/',
+    getParentRoute: () => OfficerRouteRoute,
+  } as any)
+const OfficerApplicationsRefRoute = OfficerApplicationsRefRouteImport.update({
+  id: '/applications/$ref',
+  path: '/applications/$ref',
+  getParentRoute: () => OfficerRouteRoute,
+} as any)
+const OfficerNotificationsIndexRoute =
+  OfficerNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => OfficerRouteRoute,
+  } as any)
+const OfficerSelectionIndexRoute = OfficerSelectionIndexRouteImport.update({
+  id: '/selection/',
+  path: '/selection/',
+  getParentRoute: () => OfficerRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/courses': typeof CoursesRoute
-  '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/officer': typeof OfficerRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/officer': typeof OfficerRouteWithChildren
-  '/payments': typeof PaymentsRoute
-  '/personal-info': typeof PersonalInfoRoute
-  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
-  '/study-plan': typeof StudyPlanRoute
-  '/submit-application': typeof SubmitApplicationRoute
+  '/courses': typeof ApplicantCoursesRoute
+  '/dashboard': typeof ApplicantDashboardRoute
+  '/education': typeof ApplicantEducationRoute
+  '/payments': typeof ApplicantPaymentsRoute
+  '/personal-info': typeof ApplicantPersonalInfoRoute
+  '/programmes': typeof ApplicantProgrammesRoute
+  '/study-plan': typeof ApplicantStudyPlanRoute
+  '/submit-application': typeof ApplicantSubmitApplicationRoute
   '/admin/': typeof AdminIndexRoute
   '/officer/': typeof OfficerIndexRoute
+  '/officer/applications/$ref': typeof OfficerApplicationsRefRoute
+  '/admin/programmes/': typeof AdminProgrammesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/officer/applications/': typeof OfficerApplicationsIndexRoute
+  '/officer/notifications/': typeof OfficerNotificationsIndexRoute
+  '/officer/selection/': typeof OfficerSelectionIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/courses': typeof CoursesRoute
-  '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
   '/login': typeof LoginRoute
-  '/payments': typeof PaymentsRoute
-  '/personal-info': typeof PersonalInfoRoute
-  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
-  '/study-plan': typeof StudyPlanRoute
-  '/submit-application': typeof SubmitApplicationRoute
+  '/courses': typeof ApplicantCoursesRoute
+  '/dashboard': typeof ApplicantDashboardRoute
+  '/education': typeof ApplicantEducationRoute
+  '/payments': typeof ApplicantPaymentsRoute
+  '/personal-info': typeof ApplicantPersonalInfoRoute
+  '/programmes': typeof ApplicantProgrammesRoute
+  '/study-plan': typeof ApplicantStudyPlanRoute
+  '/submit-application': typeof ApplicantSubmitApplicationRoute
   '/admin': typeof AdminIndexRoute
   '/officer': typeof OfficerIndexRoute
+  '/officer/applications/$ref': typeof OfficerApplicationsRefRoute
+  '/admin/programmes': typeof AdminProgrammesIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
+  '/officer/applications': typeof OfficerApplicationsIndexRoute
+  '/officer/notifications': typeof OfficerNotificationsIndexRoute
+  '/officer/selection': typeof OfficerSelectionIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/courses': typeof CoursesRoute
-  '/dashboard': typeof DashboardRoute
-  '/education': typeof EducationRoute
+  '/_applicant': typeof ApplicantRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/officer': typeof OfficerRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/officer': typeof OfficerRouteWithChildren
-  '/payments': typeof PaymentsRoute
-  '/personal-info': typeof PersonalInfoRoute
-  '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
-  '/study-plan': typeof StudyPlanRoute
-  '/submit-application': typeof SubmitApplicationRoute
+  '/_applicant/courses': typeof ApplicantCoursesRoute
+  '/_applicant/dashboard': typeof ApplicantDashboardRoute
+  '/_applicant/education': typeof ApplicantEducationRoute
+  '/_applicant/payments': typeof ApplicantPaymentsRoute
+  '/_applicant/personal-info': typeof ApplicantPersonalInfoRoute
+  '/_applicant/programmes': typeof ApplicantProgrammesRoute
+  '/_applicant/study-plan': typeof ApplicantStudyPlanRoute
+  '/_applicant/submit-application': typeof ApplicantSubmitApplicationRoute
   '/admin/': typeof AdminIndexRoute
   '/officer/': typeof OfficerIndexRoute
+  '/officer/applications/$ref': typeof OfficerApplicationsRefRoute
+  '/admin/programmes/': typeof AdminProgrammesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/officer/applications/': typeof OfficerApplicationsIndexRoute
+  '/officer/notifications/': typeof OfficerNotificationsIndexRoute
+  '/officer/selection/': typeof OfficerSelectionIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/officer'
+    | '/login'
+    | '/registration'
     | '/courses'
     | '/dashboard'
     | '/education'
-    | '/login'
-    | '/officer'
     | '/payments'
     | '/personal-info'
     | '/programmes'
-    | '/registration'
     | '/study-plan'
     | '/submit-application'
     | '/admin/'
     | '/officer/'
+    | '/officer/applications/$ref'
+    | '/admin/programmes/'
+    | '/admin/users/'
+    | '/officer/applications/'
+    | '/officer/notifications/'
+    | '/officer/selection/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/registration'
     | '/courses'
     | '/dashboard'
     | '/education'
-    | '/login'
     | '/payments'
     | '/personal-info'
     | '/programmes'
-    | '/registration'
     | '/study-plan'
     | '/submit-application'
     | '/admin'
     | '/officer'
+    | '/officer/applications/$ref'
+    | '/admin/programmes'
+    | '/admin/users'
+    | '/officer/applications'
+    | '/officer/notifications'
+    | '/officer/selection'
   id:
     | '__root__'
     | '/'
+    | '/_applicant'
     | '/admin'
-    | '/courses'
-    | '/dashboard'
-    | '/education'
-    | '/login'
     | '/officer'
-    | '/payments'
-    | '/personal-info'
-    | '/programmes'
+    | '/login'
     | '/registration'
-    | '/study-plan'
-    | '/submit-application'
+    | '/_applicant/courses'
+    | '/_applicant/dashboard'
+    | '/_applicant/education'
+    | '/_applicant/payments'
+    | '/_applicant/personal-info'
+    | '/_applicant/programmes'
+    | '/_applicant/study-plan'
+    | '/_applicant/submit-application'
     | '/admin/'
     | '/officer/'
+    | '/officer/applications/$ref'
+    | '/admin/programmes/'
+    | '/admin/users/'
+    | '/officer/applications/'
+    | '/officer/notifications/'
+    | '/officer/selection/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
-  CoursesRoute: typeof CoursesRoute
-  DashboardRoute: typeof DashboardRoute
-  EducationRoute: typeof EducationRoute
+  ApplicantRouteRoute: typeof ApplicantRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  OfficerRouteRoute: typeof OfficerRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
-  OfficerRoute: typeof OfficerRouteWithChildren
-  PaymentsRoute: typeof PaymentsRoute
-  PersonalInfoRoute: typeof PersonalInfoRoute
-  ProgrammesRoute: typeof ProgrammesRoute
   RegistrationRoute: typeof RegistrationRoute
-  StudyPlanRoute: typeof StudyPlanRoute
-  SubmitApplicationRoute: typeof SubmitApplicationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -228,32 +303,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_applicant': {
+      id: '/_applicant'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ApplicantRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses': {
-      id: '/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof CoursesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/education': {
-      id: '/education'
-      path: '/education'
-      fullPath: '/education'
-      preLoaderRoute: typeof EducationRouteImport
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -267,28 +328,7 @@ declare module '@tanstack/react-router' {
       id: '/officer'
       path: '/officer'
       fullPath: '/officer'
-      preLoaderRoute: typeof OfficerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/payments': {
-      id: '/payments'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof PaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/personal-info': {
-      id: '/personal-info'
-      path: '/personal-info'
-      fullPath: '/personal-info'
-      preLoaderRoute: typeof PersonalInfoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/programmes': {
-      id: '/programmes'
-      path: '/programmes'
-      fullPath: '/programmes'
-      preLoaderRoute: typeof ProgrammesRouteImport
+      preLoaderRoute: typeof OfficerRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/registration': {
@@ -298,72 +338,190 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistrationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/study-plan': {
-      id: '/study-plan'
+    '/_applicant/courses': {
+      id: '/_applicant/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof ApplicantCoursesRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/dashboard': {
+      id: '/_applicant/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ApplicantDashboardRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/education': {
+      id: '/_applicant/education'
+      path: '/education'
+      fullPath: '/education'
+      preLoaderRoute: typeof ApplicantEducationRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/payments': {
+      id: '/_applicant/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof ApplicantPaymentsRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/personal-info': {
+      id: '/_applicant/personal-info'
+      path: '/personal-info'
+      fullPath: '/personal-info'
+      preLoaderRoute: typeof ApplicantPersonalInfoRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/programmes': {
+      id: '/_applicant/programmes'
+      path: '/programmes'
+      fullPath: '/programmes'
+      preLoaderRoute: typeof ApplicantProgrammesRouteImport
+      parentRoute: typeof ApplicantRouteRoute
+    }
+    '/_applicant/study-plan': {
+      id: '/_applicant/study-plan'
       path: '/study-plan'
       fullPath: '/study-plan'
-      preLoaderRoute: typeof StudyPlanRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ApplicantStudyPlanRouteImport
+      parentRoute: typeof ApplicantRouteRoute
     }
-    '/submit-application': {
-      id: '/submit-application'
+    '/_applicant/submit-application': {
+      id: '/_applicant/submit-application'
       path: '/submit-application'
       fullPath: '/submit-application'
-      preLoaderRoute: typeof SubmitApplicationRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ApplicantSubmitApplicationRouteImport
+      parentRoute: typeof ApplicantRouteRoute
     }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof AdminRouteRoute
     }
     '/officer/': {
       id: '/officer/'
       path: '/'
       fullPath: '/officer/'
       preLoaderRoute: typeof OfficerIndexRouteImport
-      parentRoute: typeof OfficerRoute
+      parentRoute: typeof OfficerRouteRoute
+    }
+    '/admin/programmes/': {
+      id: '/admin/programmes/'
+      path: '/programmes'
+      fullPath: '/admin/programmes/'
+      preLoaderRoute: typeof AdminProgrammesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/officer/applications/': {
+      id: '/officer/applications/'
+      path: '/applications'
+      fullPath: '/officer/applications/'
+      preLoaderRoute: typeof OfficerApplicationsIndexRouteImport
+      parentRoute: typeof OfficerRouteRoute
+    }
+    '/officer/applications/$ref': {
+      id: '/officer/applications/$ref'
+      path: '/applications/$ref'
+      fullPath: '/officer/applications/$ref'
+      preLoaderRoute: typeof OfficerApplicationsRefRouteImport
+      parentRoute: typeof OfficerRouteRoute
+    }
+    '/officer/notifications/': {
+      id: '/officer/notifications/'
+      path: '/notifications'
+      fullPath: '/officer/notifications/'
+      preLoaderRoute: typeof OfficerNotificationsIndexRouteImport
+      parentRoute: typeof OfficerRouteRoute
+    }
+    '/officer/selection/': {
+      id: '/officer/selection/'
+      path: '/selection'
+      fullPath: '/officer/selection/'
+      preLoaderRoute: typeof OfficerSelectionIndexRouteImport
+      parentRoute: typeof OfficerRouteRoute
     }
   }
 }
 
-interface AdminRouteChildren {
+interface ApplicantRouteRouteChildren {
+  ApplicantCoursesRoute: typeof ApplicantCoursesRoute
+  ApplicantDashboardRoute: typeof ApplicantDashboardRoute
+  ApplicantEducationRoute: typeof ApplicantEducationRoute
+  ApplicantPaymentsRoute: typeof ApplicantPaymentsRoute
+  ApplicantPersonalInfoRoute: typeof ApplicantPersonalInfoRoute
+  ApplicantProgrammesRoute: typeof ApplicantProgrammesRoute
+  ApplicantStudyPlanRoute: typeof ApplicantStudyPlanRoute
+  ApplicantSubmitApplicationRoute: typeof ApplicantSubmitApplicationRoute
+}
+
+const ApplicantRouteRouteChildren: ApplicantRouteRouteChildren = {
+  ApplicantCoursesRoute: ApplicantCoursesRoute,
+  ApplicantDashboardRoute: ApplicantDashboardRoute,
+  ApplicantEducationRoute: ApplicantEducationRoute,
+  ApplicantPaymentsRoute: ApplicantPaymentsRoute,
+  ApplicantPersonalInfoRoute: ApplicantPersonalInfoRoute,
+  ApplicantProgrammesRoute: ApplicantProgrammesRoute,
+  ApplicantStudyPlanRoute: ApplicantStudyPlanRoute,
+  ApplicantSubmitApplicationRoute: ApplicantSubmitApplicationRoute,
+}
+
+const ApplicantRouteRouteWithChildren = ApplicantRouteRoute._addFileChildren(
+  ApplicantRouteRouteChildren,
+)
+
+interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminProgrammesIndexRoute: typeof AdminProgrammesIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminProgrammesIndexRoute: AdminProgrammesIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
-interface OfficerRouteChildren {
+interface OfficerRouteRouteChildren {
   OfficerIndexRoute: typeof OfficerIndexRoute
+  OfficerApplicationsRefRoute: typeof OfficerApplicationsRefRoute
+  OfficerApplicationsIndexRoute: typeof OfficerApplicationsIndexRoute
+  OfficerNotificationsIndexRoute: typeof OfficerNotificationsIndexRoute
+  OfficerSelectionIndexRoute: typeof OfficerSelectionIndexRoute
 }
 
-const OfficerRouteChildren: OfficerRouteChildren = {
+const OfficerRouteRouteChildren: OfficerRouteRouteChildren = {
   OfficerIndexRoute: OfficerIndexRoute,
+  OfficerApplicationsRefRoute: OfficerApplicationsRefRoute,
+  OfficerApplicationsIndexRoute: OfficerApplicationsIndexRoute,
+  OfficerNotificationsIndexRoute: OfficerNotificationsIndexRoute,
+  OfficerSelectionIndexRoute: OfficerSelectionIndexRoute,
 }
 
-const OfficerRouteWithChildren =
-  OfficerRoute._addFileChildren(OfficerRouteChildren)
+const OfficerRouteRouteWithChildren = OfficerRouteRoute._addFileChildren(
+  OfficerRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
-  CoursesRoute: CoursesRoute,
-  DashboardRoute: DashboardRoute,
-  EducationRoute: EducationRoute,
+  ApplicantRouteRoute: ApplicantRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  OfficerRouteRoute: OfficerRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  OfficerRoute: OfficerRouteWithChildren,
-  PaymentsRoute: PaymentsRoute,
-  PersonalInfoRoute: PersonalInfoRoute,
-  ProgrammesRoute: ProgrammesRoute,
   RegistrationRoute: RegistrationRoute,
-  StudyPlanRoute: StudyPlanRoute,
-  SubmitApplicationRoute: SubmitApplicationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

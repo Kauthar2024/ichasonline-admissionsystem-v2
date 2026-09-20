@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { loginUser, fetchUserProfile } from './auth-api';
-import type { AuthResponse, LoginCredentials } from './auth-api';
-import { registerUser } from './auth-api';
-import type { RegisterCredentials } from './auth-api';
+import { fetchUserProfile, loginUser, registerUser } from './auth-api';
+import type { AuthResponse, LoginCredentials, RegisterCredentials } from './auth-api';
 import { isRole } from './roles';
 import type { Role } from './roles';
 import { clearSession, getAccessToken, setSession } from './session';
@@ -36,7 +34,7 @@ async function resolveSessionUser(data: AuthResponse): Promise<SessionUser> {
     }
   }
 
-  return { ...source, role: isRole(source.role) ? source.role : 'applicant' } as SessionUser;
+  return { ...source, role: isRole(source.role) ? source.role : 'applicant' };
 }
 
 export const useLogin = () => {

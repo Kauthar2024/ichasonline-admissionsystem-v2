@@ -1,6 +1,7 @@
 import { api } from './axios';
 import { MOCK_PASSWORD, MOCK_USERS, USE_MOCK } from './mock-data';
 import { getSessionUser } from './session';
+import type { SessionUser } from './session';
 
 export interface LoginCredentials {
   username?: string;
@@ -39,7 +40,7 @@ export const registerUser = async (data: RegisterCredentials): Promise<RegisterR
 };
 export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   if (USE_MOCK) {
-    const user = MOCK_USERS[(credentials.username ?? '').trim().toLowerCase()];
+    const user = MOCK_USERS[(credentials.username ?? '').trim().toLowerCase()] as SessionUser | undefined;
     if (!user || credentials.password !== MOCK_PASSWORD) {
       throw { response: { data: { detail: 'Invalid username or password' } } };
     }
