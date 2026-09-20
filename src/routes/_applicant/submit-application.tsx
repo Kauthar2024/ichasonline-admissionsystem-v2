@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useLogout } from '../../lib/use-auth';
+import { isEditable, isQueried, useMyApplication, useSubmitApplication } from '@/features/application';
+import { useProgrammes } from '@/features/programmes';
+import { useGetPayments } from '../../lib/use-payments';
 import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen , Send } from 'lucide-react';
 
 export const Route = createFileRoute('/_applicant/submit-application')({
@@ -11,7 +14,20 @@ function RouteComponent() {
   const navigate = useNavigate();
   const logout = useLogout();
   const [agreed, setAgreed] = useState(false);
-  
+
+  const { data: application, isLoading } = useMyApplication();
+  const { data: programmes = [] } = useProgrammes();
+  const { data: payments = [] } = useGetPayments();
+  const submit = useSubmitApplication();
+
+  const programmeName = (id: string) => programmes.find((p) => p.id === id)?.name ?? id;
+  const feePaid = payments.some(
+    (p) => p.payment_type === 'application_fee' && p.status === 'completed'
+  );
+  const editable = isEditable(application);
+  const queried = isQueried(application);
+  const latestDecision = application?.decisions.at(-1);
+
   const NAV = [
       { label: 'Welcome Page', icon: <House />, path: '/dashboard'},
       { label: 'Personal Information', icon: <User />,path: '/personal-info' },
@@ -24,9 +40,12 @@ function RouteComponent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreed) return alert('Please agree to the declaration before submitting.');
-    alert('Application Submitted Successfully!');
-    navigate({ to: '/dashboard' as any });
+    if (!agreed) return;
+    // The server re-checks completeness and the paid fee, and is the thing
+    // that actually moves the application into the officer's queue.
+    submit.mutate(undefined, {
+      onSuccess: () => navigate({ to: '/dashboard' as any }),
+    });
   };
   return<div className="min-h-screen bg-green-200 flex flex-col text-xs">
       <header className="bg-purple-200 text-white p-3 font-bold text-sm shadow">
@@ -47,7 +66,7 @@ function RouteComponent() {
                   active ? 'bg-green-700 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`;
                 return path ? (
-                  <Link key={label} to={path as any} className={cls}>{icon} {label}</Link>
+                  <Link key={label} to={path} className={cls}>{icon} {label}</Link>
                 ) : (
                   <button key={label} type="button" className={`${cls} text-left`}>{icon} {label}</button>
                 );
@@ -79,42 +98,103 @@ function RouteComponent() {
               <p className="text-xs text-gray-500 mt-1">Please review your information carefully before final submission.</p>
             </div>
 
-            {/* Application Summary Box */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-              <h2 className="font-bold text-gray-800 text-sm border-b pb-2">Application Summary</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <p><strong className="text-gray-700">Full Name:</strong> Kauthar Pongwa Nassor</p>
-                <p><strong className="text-gray-700">Selected Programme:</strong> Diploma in Information Technology</p>
-                <p><strong className="text-gray-700">Exam Board:</strong> NECTA (Division I)</p>
-                <p><strong className="text-gray-700">Payment Status:</strong> <span className="text-green-600 font-semibold">Verified</span></p>
-              </div>
-            </div>
+            {isLoading && <p className="text-gray-600">Loading your application...</p>}
 
-            {/* Declaration Checkbox */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-lg border border-blue-200 text-blue-900">
-                <input
-                  type="checkbox"
-                  id="declaration"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 text-green-700 border-gray-300 rounded focus:ring-yellow-400"
-                />
-                <label htmlFor="declaration" className="text-xs cursor-pointer leading-relaxed">
-                  I declare that all credentials and personal information provided in this application are accurate and true to the best of my knowledge.
-                </label>
+            {!isLoading && !application && (
+              <div className="bg-amber-50 border border-amber-300 p-4 rounded-lg text-amber-900">
+                You have not started an application yet.{' '}
+                <Link to="/education" className="underline font-semibold">Begin with your results</Link>.
               </div>
+            )}
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t">
-                <button type="button" onClick={() => navigate({ to: '/payments' as any })} className="px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
-                  Back to Payments
-                </button>
-                <button type="submit" disabled={!agreed} className={`px-6 py-2.5 font-bold text-sm rounded-lg transition ${agreed ? 'bg-green-700 hover:bg-green-800 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
-                  Submit Application
-                </button>
-              </div>
-            </form>
+            {application && (
+              <>
+                {/* Application Summary Box */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                  <h2 className="font-bold text-gray-800 text-sm border-b pb-2">Application Summary</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <p><strong className="text-gray-700">Reference:</strong> {application.ref}</p>
+                    <p><strong className="text-gray-700">Full Name:</strong> {application.firstName} {application.lastName}</p>
+                    <p><strong className="text-gray-700">First Choice:</strong> {application.firstChoice ? programmeName(application.firstChoice) : <span className="text-red-600 font-semibold">Not selected</span>}</p>
+                    <p><strong className="text-gray-700">Second Choice:</strong> {application.secondChoice ? programmeName(application.secondChoice) : '—'}</p>
+                    <p><strong className="text-gray-700">NECTA Index:</strong> {application.nectaIndex || <span className="text-red-600 font-semibold">Missing</span>}</p>
+                    <p><strong className="text-gray-700">Exam Year:</strong> {application.examYear ?? '—'}</p>
+                    <p><strong className="text-gray-700">Results:</strong> {application.subjects.length} subject{application.subjects.length === 1 ? '' : 's'}</p>
+                    <p><strong className="text-gray-700">Documents:</strong> {application.documents.length || <span className="text-red-600 font-semibold">None uploaded</span>}</p>
+                    <p>
+                      <strong className="text-gray-700">Payment Status:</strong>{' '}
+                      {feePaid ? (
+                        <span className="text-green-600 font-semibold">Confirmed</span>
+                      ) : (
+                        <span className="text-red-600 font-semibold">Not confirmed</span>
+                      )}
+                    </p>
+                    <p>
+                      <strong className="text-gray-700">Status:</strong>{' '}
+                      <span className="font-semibold capitalize">{application.status.replace('_', ' ')}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {queried && latestDecision && (
+                  <div className="p-4 bg-orange-50 border border-orange-300 rounded-lg text-orange-900 space-y-1">
+                    <h3 className="text-xs font-bold uppercase">The admissions office asked you to correct this</h3>
+                    <p className="text-xs">{latestDecision.comment || 'No further detail was given.'}</p>
+                    <p className="text-[11px] opacity-75">{latestDecision.officer} · {latestDecision.at.slice(0, 10)}</p>
+                    <p className="text-xs pt-1">
+                      Make your changes under{' '}
+                      <Link to="/education" className="underline font-semibold">Student Application</Link> or{' '}
+                      <Link to="/programmes" className="underline font-semibold">Programmes</Link>, then resubmit below.
+                    </p>
+                  </div>
+                )}
+
+                {submit.error && (
+                  <div className="p-3 bg-red-50 border border-red-300 rounded-lg text-red-800 font-medium">
+                    {submit.error.message}
+                  </div>
+                )}
+
+                {!editable ? (
+                  <div className="p-4 bg-green-50 border border-green-300 rounded-lg text-green-900 space-y-2">
+                    <p className="font-bold">Your application has been submitted.</p>
+                    <p>
+                      Reference <strong>{application.ref}</strong> is now with the admissions office. You will be
+                      notified by SMS and email once it has been reviewed.
+                    </p>
+                    <button type="button" onClick={() => navigate({ to: '/dashboard' as any })} className="px-5 py-2 bg-green-700 text-white font-semibold rounded-lg">
+                      Back to Dashboard
+                    </button>
+                  </div>
+                ) : (
+                  /* Declaration Checkbox */
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-lg border border-blue-200 text-blue-900">
+                      <input
+                        type="checkbox"
+                        id="declaration"
+                        checked={agreed}
+                        onChange={(e) => setAgreed(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 text-green-700 border-gray-300 rounded focus:ring-yellow-400"
+                      />
+                      <label htmlFor="declaration" className="text-xs cursor-pointer leading-relaxed">
+                        I declare that all credentials and personal information provided in this application are accurate and true to the best of my knowledge.
+                      </label>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t">
+                      <button type="button" onClick={() => navigate({ to: '/payments' as any })} className="px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
+                        Back to Payments
+                      </button>
+                      <button type="submit" disabled={!agreed || submit.isPending} className={`px-6 py-2.5 font-bold text-sm rounded-lg transition ${agreed && !submit.isPending ? 'bg-green-700 hover:bg-green-800 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
+                        {submit.isPending ? (queried ? 'Resubmitting...' : 'Submitting...') : queried ? 'Resubmit Application' : 'Submit Application'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </>
+            )}
 
           </div>
         </main>

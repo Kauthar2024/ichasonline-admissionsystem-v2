@@ -1,20 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useLogout } from '../../lib/use-auth';
+import { isEditable, isQueried, useMyApplication, useSaveDraft } from '@/features/application';
+import { useProgrammes } from '@/features/programmes';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Sparkles } from 'lucide-react';
 
 export const Route = createFileRoute('/_applicant/programmes')({
   component: ProgrammesPage,
 });
-
-// Mock available programmes list
-const PROGRAMMES = [
-  { id: '1', code: 'DNM', name: 'Diploma In Nursing And Midwifery', duration: '4 Years', type: 'Diploma' },
-  { id: '2', code: 'CPS', name: 'Certificate Pharmaceutical Science', duration: '3 Years', type: 'Certificate' },
-  { id: '3', code: 'DCD', name: 'Diploma In Clinical Dentistry', duration: '3 Years', type: 'Diploma' },
-  
-
-];
 
 const STEPS = [
   { name: '1. Dashboard', path: '/dashboard', done: true },
@@ -37,16 +30,44 @@ const NAV = [
 function ProgrammesPage() {
   const navigate = useNavigate();
   const logout = useLogout();
+
+  const { data: programmes = [], isLoading: loadingProgrammes, error: programmesError } = useProgrammes();
+  const { data: application, isLoading: loadingApplication } = useMyApplication();
+  const saveDraft = useSaveDraft();
+
   const [firstChoice, setFirstChoice] = useState('');
   const [secondChoice, setSecondChoice] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Only programmes the admin has left open can be applied to.
+  const openProgrammes = programmes.filter((p) => p.active);
+  // Locked until the server confirms the application's state, so a submitted
+  // application never looks editable while the query is still in flight.
+  const editable = !loadingApplication && (!application || isEditable(application));
+
+  useEffect(() => {
+    if (!application) return;
+    setFirstChoice(application.firstChoice);
+    setSecondChoice(application.secondChoice);
+  }, [application]);
 
   const handleNext = () => {
+    setFormError(null);
     if (!firstChoice) {
-      alert('Please select at least your First Choice Programme.');
+      setFormError('Please select at least your First Choice Programme.');
       return;
     }
-    navigate({ to: '/personal-info' as any });
+    if (!editable) {
+      navigate({ to: '/personal-info' as any });
+      return;
+    }
+    saveDraft.mutate(
+      { firstChoice, secondChoice },
+      { onSuccess: () => navigate({ to: '/personal-info' as any }) }
+    );
   };
+
+  const error = formError ?? saveDraft.error?.message ?? programmesError?.message ?? null;
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-100 text-xs text-slate-800">
@@ -124,47 +145,68 @@ function ProgrammesPage() {
             </p>
           </div>
 
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-300 rounded text-red-800 font-medium">{error}</div>
+          )}
+          {isQueried(application) && (
+            <div className="p-3 bg-orange-50 border border-orange-300 rounded text-orange-900 font-medium">
+              The admissions office asked you to correct something. Adjust your choices if needed, then
+              resubmit from the Submit Application page.
+            </div>
+          )}
+          {application && !isEditable(application) && (
+            <div className="p-3 bg-blue-50 border border-blue-300 rounded text-blue-900 font-medium">
+              Your application is with the admissions office, so your choices can no longer be changed.
+            </div>
+          )}
+
           {/* Selection Card */}
           <div className="bg-white border border-slate-300 rounded-lg p-5 shadow-sm space-y-5">
             <h2 className="font-bold text-slate-800 border-b pb-2 text-sm flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-black" /> Programme Choice Selection
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* First Choice Selection */}
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">First Choice Programme *</label>
-                <select
-                  value={firstChoice}
-                  onChange={(e) => setFirstChoice(e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 rounded bg-slate-50 focus:bg-white text-xs font-medium focus:ring-1 focus:ring-slate-800"
-                >
-                  <option value="">-- Select First Choice --</option>
-                  {PROGRAMMES.map((p) => (
-                    <option key={p.id} value={p.code} disabled={p.code === secondChoice}>
-                      {p.code} - {p.name} ({p.duration})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {loadingProgrammes ? (
+              <p className="text-slate-600">Loading available programmes...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* First Choice Selection */}
+                <div className="space-y-1">
+                  <label className="block font-semibold text-slate-700">First Choice Programme *</label>
+                  <select
+                    value={firstChoice}
+                    disabled={!editable}
+                    onChange={(e) => setFirstChoice(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded bg-slate-50 focus:bg-white text-xs font-medium focus:ring-1 focus:ring-slate-800 disabled:opacity-60"
+                  >
+                    <option value="">-- Select First Choice --</option>
+                    {openProgrammes.map((p) => (
+                      <option key={p.id} value={p.id} disabled={p.id === secondChoice}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Second Choice Selection */}
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">Second Choice Programme (Optional)</label>
-                <select
-                  value={secondChoice}
-                  onChange={(e) => setSecondChoice(e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 rounded bg-slate-50 focus:bg-white text-xs font-medium focus:ring-1 focus:ring-slate-800"
-                >
-                  <option value="">-- Select Second Choice --</option>
-                  {PROGRAMMES.map((p) => (
-                    <option key={p.id} value={p.code} disabled={p.code === firstChoice}>
-                      {p.code} - {p.name} ({p.duration})
-                    </option>
-                  ))}
-                </select>
+                {/* Second Choice Selection */}
+                <div className="space-y-1">
+                  <label className="block font-semibold text-slate-700">Second Choice Programme (Optional)</label>
+                  <select
+                    value={secondChoice}
+                    disabled={!editable}
+                    onChange={(e) => setSecondChoice(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded bg-slate-50 focus:bg-white text-xs font-medium focus:ring-1 focus:ring-slate-800 disabled:opacity-60"
+                  >
+                    <option value="">-- Select Second Choice --</option>
+                    {openProgrammes.map((p) => (
+                      <option key={p.id} value={p.id} disabled={p.id === firstChoice}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Cards for Overview */}
@@ -173,15 +215,20 @@ function ProgrammesPage() {
               Available Programmes Directory
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50">
-              {PROGRAMMES.map((prog) => (
+              {openProgrammes.map((prog) => (
                 <div key={prog.id} className="p-3 border rounded bg-white shadow-xs flex justify-between items-center">
                   <div>
-                    <p className="font-bold text-slate-800">{prog.code}</p>
-                    <p className="text-[11px] text-slate-600">{prog.name}</p>
-                    <span className="text-[10px] text-emerald-700 font-semibold">{prog.duration} • {prog.type}</span>
+                    <p className="font-bold text-slate-800">{prog.name}</p>
+                    <p className="text-[11px] text-slate-600">
+                      Requires {prog.requiredSubjects.join(', ')} at grade {prog.minGrade} or better
+                    </p>
+                    <span className="text-[10px] text-emerald-700 font-semibold">{prog.quota} seats this intake</span>
                   </div>
                 </div>
               ))}
+              {!loadingProgrammes && openProgrammes.length === 0 && (
+                <p className="text-slate-600">No programmes are open for applications right now.</p>
+              )}
             </div>
           </div>
 
@@ -197,9 +244,10 @@ function ProgrammesPage() {
             <button
               type="button"
               onClick={handleNext}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded shadow"
+              disabled={saveDraft.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded shadow disabled:bg-slate-400 disabled:cursor-not-allowed"
             >
-              SAVE & PROCEED
+              {saveDraft.isPending ? 'SAVING...' : 'SAVE & PROCEED'}
             </button>
           </div>
         </main>

@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { getAccessToken } from './session';
 
-// Changed fallback to include /api at the end
-const BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/'; 
+// VITE_API_URL is what .env sets; VITE_API_BASE_URL is kept as a fallback for
+// older local setups. Both point at the /api prefix of the Django backend.
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://127.0.0.1:8000/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,

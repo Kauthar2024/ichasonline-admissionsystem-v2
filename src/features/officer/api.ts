@@ -1,3 +1,6 @@
+import { apiError } from '@/lib/api-error';
+import { api } from '@/lib/axios';
+import { USE_MOCK } from '@/lib/mock-data';
 import { createMockCollection } from '@/lib/mock-store';
 import { getSessionUser } from '@/lib/session';
 import { fetchProgrammes } from '@/features/programmes';
@@ -6,9 +9,13 @@ import { computeSelection } from './selection';
 import { REJECTION_REASONS, isReviewable } from './types';
 import type { AppNotification, Application, Decision, DecisionInput } from './types';
 
-// No backend endpoints yet: backed by the mock store.
-// Replace the bodies with api.get/post calls when they exist; the hooks
-// and screens only depend on these signatures.
+// Backed by the officer endpoints of ichas-api:
+//   GET  /applications/            GET  /applications/<ref>/
+//   POST /applications/<ref>/decision/
+//   POST /selection/               GET  /notifications/
+// With VITE_USE_MOCK=true the same behaviour runs against localStorage, so the
+// screens still work with no backend running. The server re-checks every rule
+// below — the mock branch only mirrors them.
 const applications = createMockCollection<Application>('applications', seedApplications);
 const notifications = createMockCollection<AppNotification>('notifications', () => []);
 
@@ -28,7 +35,7 @@ function notify(app: Application, message: string) {
   ]);
 }
 
-// Stand-in for the encrypted QR payload embedded in the PDF letter.
+// Stand-in for the encrypted QR payload the backend issues (PRO005).
 function letterToken(app: Application) {
   const raw = `${app.ref}|${app.firstChoice}|${app.nectaIndex}`;
   let h = 5381;
@@ -36,15 +43,41 @@ function letterToken(app: Application) {
   return `ICHAS-${h.toString(16).toUpperCase().padStart(8, '0')}-${btoa(raw).slice(0, 12)}`;
 }
 
-export const fetchApplications = async (): Promise<Application[]> => applications.all();
+export const fetchApplications = async (): Promise<Application[]> => {
+  if (USE_MOCK) return applications.all();
+  try {
+    const { data } = await api.get<Application[]>('/applications/');
+    return data;
+  } catch (error) {
+    throw apiError(error, 'Could not load applications');
+  }
+};
 
 export const fetchApplication = async (ref: string): Promise<Application> => {
-  const app = applications.all().find((a) => a.ref === ref);
-  if (!app) throw new Error(`Application ${ref} not found`);
-  return app;
+  if (USE_MOCK) {
+    const app = applications.all().find((a) => a.ref === ref);
+    if (!app) throw new Error(`Application ${ref} not found`);
+    return app;
+  }
+  try {
+    const { data } = await api.get<Application>(`/applications/${ref}/`);
+    return data;
+  } catch (error) {
+    throw apiError(error, `Application ${ref} not found`);
+  }
 };
 
 export const decideApplication = async (input: DecisionInput): Promise<Application> => {
+  if (!USE_MOCK) {
+    const { ref, ...body } = input;
+    try {
+      const { data } = await api.post<Application>(`/applications/${ref}/decision/`, body);
+      return data;
+    } catch (error) {
+      throw apiError(error, 'Could not record the decision');
+    }
+  }
+
   const items = applications.all();
   const current = items.find((a) => a.ref === input.ref);
   if (!current) throw new Error(`Application ${input.ref} not found`);
@@ -81,6 +114,15 @@ export const decideApplication = async (input: DecisionInput): Promise<Applicati
 
 // PRO005: batch selection by programme quota + admission letter generation.
 export const runSelection = async (): Promise<{ admitted: number }> => {
+  if (!USE_MOCK) {
+    try {
+      const { data } = await api.post<{ admitted: number }>('/selection/');
+      return data;
+    } catch (error) {
+      throw apiError(error, 'Could not run the selection');
+    }
+  }
+
   const programmes = await fetchProgrammes();
   const selected = computeSelection(applications.all(), programmes)
     .flatMap((p) => p.rows.filter((r) => r.outcome === 'selected').map((r) => ({ ref: r.app.ref, name: p.programme.name })));
@@ -96,4 +138,30 @@ export const runSelection = async (): Promise<{ admitted: number }> => {
   return { admitted: selected.length };
 };
 
-export const fetchNotifications = async (): Promise<AppNotification[]> => [...notifications.all()].reverse();
+// The QR image is behind the auth header, so it cannot be used as a plain
+// <img src>. Fetch it through the authenticated client and hand back a data
+// URL. Returns null in mock mode, where there is no backend to render it.
+export const fetchLetterQr = async (ref: string): Promise<string | null> => {
+  if (USE_MOCK) return null;
+  try {
+    const { data } = await api.get<ArrayBuffer>(`/applications/${ref}/letter/qr.png`, {
+      responseType: 'arraybuffer',
+    });
+    let binary = '';
+    for (const byte of new Uint8Array(data)) binary += String.fromCharCode(byte);
+    return `data:image/png;base64,${btoa(binary)}`;
+  } catch (error) {
+    throw apiError(error, 'Could not load the verification QR code');
+  }
+};
+
+export const fetchNotifications = async (): Promise<AppNotification[]> => {
+  if (USE_MOCK) return [...notifications.all()].reverse();
+  try {
+    // The API already returns newest-first.
+    const { data } = await api.get<AppNotification[]>('/notifications/');
+    return data;
+  } catch (error) {
+    throw apiError(error, 'Could not load notifications');
+  }
+};

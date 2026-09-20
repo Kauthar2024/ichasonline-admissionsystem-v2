@@ -1,10 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { decideApplication, runSelection } from './api';
-import { applicationQueryOptions, applicationsQueryOptions, notificationsQueryOptions } from './queries';
+import {
+  applicationQueryOptions,
+  applicationsQueryOptions,
+  letterQrQueryOptions,
+  notificationsQueryOptions,
+} from './queries';
 import type { DecisionInput } from './types';
 
 export const useApplications = () => useQuery(applicationsQueryOptions());
 export const useApplication = (ref: string) => useQuery(applicationQueryOptions(ref));
+export const useLetterQr = (ref: string) => useQuery(letterQrQueryOptions(ref));
 export const useNotifications = () => useQuery(notificationsQueryOptions());
 
 // Decisions and selection change applications and the notification log.

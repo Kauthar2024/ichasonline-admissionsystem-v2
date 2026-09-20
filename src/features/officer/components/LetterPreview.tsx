@@ -1,8 +1,11 @@
 import { useProgrammes } from '@/features/programmes';
+import { USE_MOCK } from '@/lib/mock-data';
+import { useLetterQr } from '../hooks';
 import type { Application } from '../types';
 
 // Deterministic pseudo-QR from the token so each letter looks unique.
-// Placeholder only: the real letter embeds an encrypted QR from the backend.
+// Used only in mock mode; with a backend the real encrypted QR is fetched from
+// /api/applications/<ref>/letter/qr.png.
 function QrPlaceholder({ token }: { token: string }) {
   const size = 21;
   let seed = 0;
@@ -25,6 +28,24 @@ function QrPlaceholder({ token }: { token: string }) {
       })}
     </svg>
   );
+}
+
+// The scannable code the registrar verifies. A failed fetch shows an error
+// rather than the placeholder, so a letter is never printed with a QR that
+// cannot be scanned.
+function VerificationQr({ app }: { app: Application }) {
+  const { data: qr, isLoading, error } = useLetterQr(app.ref);
+
+  if (USE_MOCK) return <QrPlaceholder token={app.letter?.token ?? ''} />;
+  if (isLoading) return <div className="w-28 h-28 shrink-0 bg-gray-100 border rounded animate-pulse" />;
+  if (error || !qr) {
+    return (
+      <div className="w-28 h-28 shrink-0 border border-red-300 bg-red-50 rounded p-2 text-red-700 flex items-center text-center">
+        {error?.message ?? 'QR code unavailable'}
+      </div>
+    );
+  }
+  return <img src={qr} alt="Admission letter verification QR code" className="w-28 h-28 shrink-0" />;
 }
 
 export function LetterPreview({ app, onClose }: { app: Application; onClose: () => void }) {
@@ -55,10 +76,11 @@ export function LetterPreview({ app, onClose }: { app: Application; onClose: () 
           </ul>
         </div>
         <div className="flex items-center gap-4 border-t pt-3">
-          <QrPlaceholder token={app.letter.token} />
-          <div>
-            <p className="text-gray-500">Verification code</p>
-            <p className="font-mono font-bold break-all">{app.letter.token}</p>
+          <VerificationQr app={app} />
+          <div className="min-w-0">
+            <p className="text-gray-500">Scan to verify this letter, or enter the code below</p>
+            {/* Not scroll-capped: a clipped code would be useless on the printed letter. */}
+            <p className="font-mono text-[9px] leading-tight break-all text-gray-700">{app.letter.token}</p>
           </div>
         </div>
         <div className="flex justify-end gap-3 print:hidden">

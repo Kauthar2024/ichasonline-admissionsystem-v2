@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useLogout } from '../../lib/use-auth';
+import { isEditable, isQueried, useDeleteDocument, useMyApplication, useSaveDraft, useUploadDocument } from '@/features/application';
+import type { Grade } from '@/features/programmes';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Upload, FileCheck, AlertCircle } from 'lucide-react';
 
 export const Route = createFileRoute('/_applicant/education')({ component: EducationPage });
@@ -40,53 +42,86 @@ const NAV = [
   { label: 'Change Password', icon: <LockKeyholeOpen /> },
 ];
 
+const RESULT_DOC_KEYWORDS = ['result', 'necta', 'certificate', 'slip', 'transcript', 'matokeo'];
+
 function EducationPage() {
   const navigate = useNavigate();
   const logout = useLogout();
+
+  const { data: application, isLoading } = useMyApplication();
+  const saveDraft = useSaveDraft();
+  const upload = useUploadDocument();
+  const removeDocument = useDeleteDocument();
+
   const [form, setForm] = useState({ indexNumber: '', examYear: '', submitted: false });
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  
-  // File state & validation state
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isValidResultDoc, setIsValidResultDoc] = useState<boolean>(false);
+  const [nameWarning, setNameWarning] = useState<string | null>(null);
+
+  // Restore whatever was already saved on the server, so the step can be
+  // revisited without retyping it.
+  useEffect(() => {
+    if (!application) return;
+    setForm({
+      indexNumber: application.nectaIndex,
+      examYear: application.examYear ? String(application.examYear) : '',
+      submitted: application.subjects.length > 0,
+    });
+    setSubjects(
+      application.subjects.map((s, i) => ({
+        no: i + 1,
+        name: s.name,
+        grade: s.grade,
+        points: GRADE_MAP[s.grade] || 0,
+      }))
+    );
+  }, [application]);
+
+  const documents = application?.documents ?? [];
+  // Stay locked until the server has told us whether an application exists —
+  // otherwise a submitted application looks editable while the query is in
+  // flight. A loaded-but-absent application means the draft is yet to start.
+  const editable = !isLoading && (!application || isEditable(application));
+  // Grades stay hidden until the applicant has backed them with a document.
+  const hasResultDoc = documents.length > 0;
 
   const handleFetch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.indexNumber || !form.examYear) return;
-    
-    // Automatically populate subjects structure
-    setSubjects(
-      INITIAL_SUBJECT_RESULTS.map((item, i) => ({
-        no: i + 1,
-        name: item.name,
-        grade: item.grade,
-        points: GRADE_MAP[item.grade] || 0,
-      }))
-    );
+
+    // Stands in for the NECTA lookup: the grades are a sample, but they are
+    // persisted so the officer reviews exactly what the applicant saw.
+    const fetched = INITIAL_SUBJECT_RESULTS.map((item, i) => ({
+      no: i + 1,
+      name: item.name,
+      grade: item.grade,
+      points: GRADE_MAP[item.grade] || 0,
+    }));
+    setSubjects(fetched);
     setForm((p) => ({ ...p, submitted: true }));
+
+    saveDraft.mutate({
+      nectaIndex: form.indexNumber.trim(),
+      examYear: Number(form.examYear),
+      subjects: fetched.map((s) => ({ name: s.name, grade: s.grade as Grade })),
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setUploadedFile(file);
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
 
-      // Simple validation logic checking file name keywords for NECTA/Result Slip
-      const fileNameLower = file.name.toLowerCase();
-      const validKeywords = ['result', 'necta', 'certificate', 'slip', 'transcript', 'matokeo'];
-      const isResultDocument = validKeywords.some((keyword) => fileNameLower.includes(keyword));
-
-      setIsValidResultDoc(isResultDocument);
-    }
+    const looksLikeResults = RESULT_DOC_KEYWORDS.some((k) => file.name.toLowerCase().includes(k));
+    setNameWarning(
+      looksLikeResults
+        ? null
+        : `"${file.name}" does not look like a result slip — make sure you attached the right file.`
+    );
+    upload.mutate(file);
   };
 
-  const handleRemoveFile = () => {
-    setUploadedFile(null);
-    setIsValidResultDoc(false);
-  };
-
-  // Calculate points dynamically only if a valid result file is uploaded
-  const totalPoints = isValidResultDoc ? subjects.reduce((a, b) => a + b.points, 0) : '';
+  const totalPoints = hasResultDoc ? subjects.reduce((a, b) => a + b.points, 0) : '';
+  const saveError = saveDraft.error ?? upload.error ?? removeDocument.error;
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-100 text-xs text-slate-800">
@@ -126,6 +161,22 @@ function EducationPage() {
             <p className="text-slate-500 italic text-[11px]">Add your results based on the instruction from form</p>
           </div>
 
+          {saveError && (
+            <div className="p-3 bg-red-50 border border-red-300 rounded text-red-800 font-medium">{saveError.message}</div>
+          )}
+          {isQueried(application) && (
+            <div className="p-3 bg-orange-50 border border-orange-300 rounded text-orange-900 font-medium">
+              The admissions office asked you to correct something. Update your details, then resubmit
+              from the Submit Application page.
+            </div>
+          )}
+          {application && !isEditable(application) && (
+            <div className="p-3 bg-blue-50 border border-blue-300 rounded text-blue-900 font-medium">
+              Your application is with the admissions office, so these details can no longer be changed.
+            </div>
+          )}
+          {isLoading && <p className="text-slate-600">Loading your application...</p>}
+
           {!form.submitted ? (
             <form onSubmit={handleFetch} className="border border-slate-300 rounded bg-white p-5 shadow-sm grid grid-cols-3 gap-4 items-end">
               <div><label className="block font-semibold mb-1">Index Number</label><input type="text" required placeholder="e.g. S0383/0052/2021" value={form.indexNumber} onChange={(e) => setForm({ ...form, indexNumber: e.target.value })} className="w-full p-2 border rounded" /></div>
@@ -137,8 +188,10 @@ function EducationPage() {
               <div className="border border-slate-300 rounded overflow-hidden bg-white shadow-sm">
                 <div className="bg-slate-800 text-white font-semibold px-4 py-2.5">List of Registered Subjects for Ordinary Level (Form IV)</div>
                 <table className="w-full text-left border-collapse">
-                  <tr className="bg-slate-800 text-white border-t border-slate-700 font-semibold text-[11px]">{['School Name', 'Index Number', 'Year', 'Examination Authority', 'Status', 'Action'].map((h) => <th key={h} className="p-2.5">{h}</th>)}</tr>
-                  <tr className="border-t border-slate-200"><td className="p-2.5">BEN BELLA SECONDARY SCHOOL</td><td className="p-2.5">{form.indexNumber}</td><td className="p-2.5">{form.examYear}</td><td className="p-2.5">NECTA</td><td className="p-2.5 text-green-600 font-bold">Verified</td><td className="p-2.5">No</td></tr>
+                  <tbody>
+                    <tr className="bg-slate-800 text-white border-t border-slate-700 font-semibold text-[11px]">{['School Name', 'Index Number', 'Year', 'Examination Authority', 'Status', 'Action'].map((h) => <th key={h} className="p-2.5">{h}</th>)}</tr>
+                    <tr className="border-t border-slate-200"><td className="p-2.5">BEN BELLA SECONDARY SCHOOL</td><td className="p-2.5">{form.indexNumber}</td><td className="p-2.5">{form.examYear}</td><td className="p-2.5">NECTA</td><td className="p-2.5 text-green-600 font-bold">Verified</td><td className="p-2.5">No</td></tr>
+                  </tbody>
                 </table>
               </div>
 
@@ -153,27 +206,49 @@ function EducationPage() {
                     <p className="text-[11px] text-slate-500 mt-0.5">Please attach a clear scanned PDF or Image copy of your certificate or result slip (Max 5MB) to view and verify grades.</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded text-[11px] inline-flex items-center gap-1.5 shrink-0">
+                    <label className={`bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded text-[11px] inline-flex items-center gap-1.5 shrink-0 ${editable && !upload.isPending ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}>
                       <Upload className="w-3.5 h-3.5" />
-                      {uploadedFile ? 'Change File' : 'Choose File'}
-                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileChange} className="hidden" />
+                      {upload.isPending ? 'Uploading...' : documents.length ? 'Add Another File' : 'Choose File'}
+                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" disabled={!editable || upload.isPending} onChange={handleFileChange} className="hidden" />
                     </label>
                   </div>
                 </div>
 
-                {/* Status bar based on valid document check */}
-                {uploadedFile && (
-                  <div className={`px-4 py-2 border-t flex items-center justify-between text-[11px] font-medium ${isValidResultDoc ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                {nameWarning && (
+                  <div className="px-4 py-2 border-t bg-amber-50 border-amber-200 text-amber-800 text-[11px] font-medium flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-amber-600" /> {nameWarning}
+                  </div>
+                )}
+
+                {/* Documents actually stored against the application */}
+                {documents.map((doc) => (
+                  <div key={doc.id} className="px-4 py-2 border-t bg-emerald-50 border-emerald-200 text-emerald-800 flex items-center justify-between text-[11px] font-medium">
                     <span className="flex items-center gap-1.5">
-                      {isValidResultDoc ? (
-                        <FileCheck className="w-4 h-4 text-emerald-600" />
+                      <FileCheck className="w-4 h-4 text-emerald-600" />
+                      Uploaded:{' '}
+                      {doc.url ? (
+                        <a href={doc.url} target="_blank" rel="noreferrer" className="underline"><strong>{doc.name}</strong></a>
                       ) : (
-                        <AlertCircle className="w-4 h-4 text-red-600" />
-                      )}
-                      Selected: <strong>{uploadedFile.name}</strong> ({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)
-                      {!isValidResultDoc && <span className="text-red-600 font-bold ml-2">(Invalid Document: Please upload a valid NECTA Result Slip / Certificate)</span>}
+                        <strong>{doc.name}</strong>
+                      )}{' '}
+                      ({doc.format}, {doc.sizeKb} KB)
                     </span>
-                    <button onClick={handleRemoveFile} className="text-red-600 hover:underline font-bold">Remove</button>
+                    {editable && (
+                      <button
+                        type="button"
+                        disabled={removeDocument.isPending}
+                        onClick={() => removeDocument.mutate(doc.id)}
+                        className="text-red-600 hover:underline font-bold disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                {!documents.length && !upload.isPending && (
+                  <div className="px-4 py-2 border-t bg-slate-50 text-slate-600 text-[11px]">
+                    No document uploaded yet. Your grades stay hidden until you attach your result slip.
                   </div>
                 )}
               </div>
@@ -189,13 +264,13 @@ function EducationPage() {
                         <td className="p-2.5">{s.no}</td>
                         <td className="p-2.5">{s.name}</td>
                         <td className="p-2.5 font-bold text-slate-800">
-                          {/* Display grade badge ONLY IF a valid result document is uploaded */}
-                          {isValidResultDoc ? (
+                          {/* Grade badge shows once the result document is on file */}
+                          {hasResultDoc ? (
                             <span className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded font-bold">{s.grade}</span>
                           ) : null}
                         </td>
                         <td className="p-2.5 font-medium">
-                          {isValidResultDoc ? s.points : ''}
+                          {hasResultDoc ? s.points : ''}
                         </td>
                         <td className="p-2.5">No</td>
                       </tr>
@@ -215,10 +290,12 @@ function EducationPage() {
               <Banner title="Advanced Level Results" text="If you have Advanced Level Results, Click Here" btnText="ADD ADVANCED LEVEL RESULTS" />
               <Banner title="Equivalent Results" text="If you have Equivalent Level Results, Click Here" btnText="ADD EQUIVALENT LEVEL RESULTS" />
 
-              <div className="flex justify-end pt-2">
-                <button 
-                  disabled={!isValidResultDoc}
-                  onClick={() => navigate({ to: '/programmes' as any })} 
+              <div className="flex justify-end items-center gap-3 pt-2">
+                {saveDraft.isPending && <span className="text-slate-600">Saving your results...</span>}
+                {saveDraft.isSuccess && <span className="text-emerald-800 font-semibold">Results saved</span>}
+                <button
+                  disabled={!hasResultDoc || saveDraft.isPending}
+                  onClick={() => navigate({ to: '/programmes' as any })}
                   className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded shadow disabled:bg-slate-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all"
                 >
                   PROCEED TO APPLICATION
