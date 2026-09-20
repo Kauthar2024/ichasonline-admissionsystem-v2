@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen , Send } from 'lucide-react';
 
 export const Route = createFileRoute('/submit-application')({
+  beforeLoad: requireRole('applicant'),
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const logout = useLogout();
   const [agreed, setAgreed] = useState(false);
   
   const NAV = [
@@ -53,7 +57,7 @@ function RouteComponent() {
             </nav>
           </div>
           <div className="pt-4 border-t border-gray-800">
-            <button onClick={() => navigate({ to: '/login' as any })} className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-2">
+            <button onClick={() => logout()} className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-2">
               <LogOut className="w-4 h-4" /> Log Out
             </button>
           </div>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import {
   LogOut,
   House,
@@ -18,6 +20,7 @@ import { usePersonalDetails, useSavePersonalDetails } from '../lib/personal-api'
 import type { PersonalDetails } from '../lib/personal-api';
 
 export const Route = createFileRoute('/personal-info')({
+  beforeLoad: requireRole('applicant'),
   component: RouteComponent,
 });
 
@@ -33,6 +36,7 @@ const PROGRESS_STEPS = [
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const logout = useLogout();
 
   // Integrated API hooks
   const { data: apiData, isLoading, isError } = usePersonalDetails();
@@ -152,7 +156,7 @@ function RouteComponent() {
 
           <div className="pt-4 border-t border-gray-800">
             <button
-              onClick={() => navigate({ to: '/login' as any })}
+              onClick={() => logout()}
               className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-2"
             >
               <LogOut className="w-4 h-4" /> Log Out

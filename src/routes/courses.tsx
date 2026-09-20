@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
 
 export const Route = createFileRoute('/courses')({
+  beforeLoad: requireRole('applicant'),
   component: CourseSelectionPage,
 });
 

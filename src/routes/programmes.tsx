@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Sparkles } from 'lucide-react';
 
 export const Route = createFileRoute('/programmes')({
+  beforeLoad: requireRole('applicant'),
   component: ProgrammesPage,
 });
 
@@ -35,6 +38,7 @@ const NAV = [
 
 export function ProgrammesPage() {
   const navigate = useNavigate();
+  const logout = useLogout();
   const [firstChoice, setFirstChoice] = useState('');
   const [secondChoice, setSecondChoice] = useState('');
 
@@ -83,7 +87,7 @@ export function ProgrammesPage() {
             </nav>
           </div>
           <button
-            onClick={() => navigate({ to: '/login' as any })}
+            onClick={() => logout()}
             className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
           >
             <LogOut className="w-4 h-4" /> Log Out

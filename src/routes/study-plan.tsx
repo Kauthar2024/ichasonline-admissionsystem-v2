@@ -1,8 +1,11 @@
 import React from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import { LogOut,House , User, BookOpen, DollarSign , LockKeyholeOpen , Columns3 , CircleAlert , FileQuestionMark, UserRound , Check} from 'lucide-react';
 
-export const Route = createFileRoute('/study-plan')({ 
+export const Route = createFileRoute('/study-plan')({
+  beforeLoad: requireRole('applicant'), 
   component: RouteComponent });
 
   const STEPS = [
@@ -29,6 +32,7 @@ const ChoiceSelect = ({ label, badgeText, badgeColor }: { label: string; badgeTe
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const logout = useLogout();
 
 
     const NAV = [
@@ -75,7 +79,7 @@ function RouteComponent() {
          
                    <div className="pt-4 border-t border-gray-800">
                      <button
-                       onClick={() => navigate({ to: '/login' as any })}
+                       onClick={() => logout()}
                        className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-2"
                      >
                        <LogOut /> Log Out

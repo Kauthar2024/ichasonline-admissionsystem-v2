@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Send, CircleHelp, Menu, GraduationCap, Check, Upload, FileCheck, AlertCircle } from 'lucide-react';
 
-export const Route = createFileRoute('/education')({ component: EducationPage });
+export const Route = createFileRoute('/education')({
+  beforeLoad: requireRole('applicant'), component: EducationPage });
 
 interface Subject { no: number; name: string; grade: string; points: number; }
 const GRADE_MAP: Record<string, number> = { A: 1, B: 2, C: 3, D: 4, F: 5 };
@@ -41,6 +44,7 @@ const NAV = [
 
 export function EducationPage() {
   const navigate = useNavigate();
+  const logout = useLogout();
   const [form, setForm] = useState({ indexNumber: '', examYear: '', submitted: false });
   const [subjects, setSubjects] = useState<Subject[]>([]);
   
@@ -105,7 +109,7 @@ export function EducationPage() {
               ))}
             </nav>
           </div>
-          <button onClick={() => navigate({ to: '/login' as any })} className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+          <button onClick={() => logout()} className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2">
             <LogOut className="w-4 h-4" /> Log Out
           </button>
         </aside>

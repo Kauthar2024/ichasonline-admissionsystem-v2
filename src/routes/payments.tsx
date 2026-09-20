@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { requireRole } from '../lib/guards';
+import { useLogout } from '../lib/use-auth';
 import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, RefreshCw , Menu , CircleHelp } from 'lucide-react';
 
 export const Route = createFileRoute('/payments')({
+  beforeLoad: requireRole('applicant'),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const logout = useLogout();
   const [controlNumber, setControlNumber] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [transactionRef, setTransactionRef] = useState('');
@@ -72,7 +76,7 @@ function RouteComponent() {
 
           <div className="pt-4 border-t border-gray-800">
             <button
-              onClick={() => navigate({ to: '/login' as any })}
+              onClick={() => logout()}
               className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-2"
             >
               <LogOut className="w-4 h-4" /> Log Out

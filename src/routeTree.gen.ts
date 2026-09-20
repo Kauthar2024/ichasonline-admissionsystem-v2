@@ -10,20 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EducationRouteImport } from './routes/education'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as OfficerRouteImport } from './routes/officer'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PersonalInfoRouteImport } from './routes/personal-info'
 import { Route as ProgrammesRouteImport } from './routes/programmes'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as StudyPlanRouteImport } from './routes/study-plan'
 import { Route as SubmitApplicationRouteImport } from './routes/submit-application'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as OfficerIndexRouteImport } from './routes/officer.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -44,6 +53,11 @@ const EducationRoute = EducationRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficerRoute = OfficerRouteImport.update({
+  id: '/officer',
+  path: '/officer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentsRoute = PaymentsRouteImport.update({
@@ -76,19 +90,33 @@ const SubmitApplicationRoute = SubmitApplicationRouteImport.update({
   path: '/submit-application',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const OfficerIndexRoute = OfficerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OfficerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
   '/education': typeof EducationRoute
   '/login': typeof LoginRoute
+  '/officer': typeof OfficerRouteWithChildren
   '/payments': typeof PaymentsRoute
   '/personal-info': typeof PersonalInfoRoute
   '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
   '/submit-application': typeof SubmitApplicationRoute
+  '/admin/': typeof AdminIndexRoute
+  '/officer/': typeof OfficerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,35 +130,45 @@ export interface FileRoutesByTo {
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
   '/submit-application': typeof SubmitApplicationRoute
+  '/admin': typeof AdminIndexRoute
+  '/officer': typeof OfficerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
   '/education': typeof EducationRoute
   '/login': typeof LoginRoute
+  '/officer': typeof OfficerRouteWithChildren
   '/payments': typeof PaymentsRoute
   '/personal-info': typeof PersonalInfoRoute
   '/programmes': typeof ProgrammesRoute
   '/registration': typeof RegistrationRoute
   '/study-plan': typeof StudyPlanRoute
   '/submit-application': typeof SubmitApplicationRoute
+  '/admin/': typeof AdminIndexRoute
+  '/officer/': typeof OfficerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/courses'
     | '/dashboard'
     | '/education'
     | '/login'
+    | '/officer'
     | '/payments'
     | '/personal-info'
     | '/programmes'
     | '/registration'
     | '/study-plan'
     | '/submit-application'
+    | '/admin/'
+    | '/officer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,27 +182,35 @@ export interface FileRouteTypes {
     | '/registration'
     | '/study-plan'
     | '/submit-application'
+    | '/admin'
+    | '/officer'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/courses'
     | '/dashboard'
     | '/education'
     | '/login'
+    | '/officer'
     | '/payments'
     | '/personal-info'
     | '/programmes'
     | '/registration'
     | '/study-plan'
     | '/submit-application'
+    | '/admin/'
+    | '/officer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CoursesRoute: typeof CoursesRoute
   DashboardRoute: typeof DashboardRoute
   EducationRoute: typeof EducationRoute
   LoginRoute: typeof LoginRoute
+  OfficerRoute: typeof OfficerRouteWithChildren
   PaymentsRoute: typeof PaymentsRoute
   PersonalInfoRoute: typeof PersonalInfoRoute
   ProgrammesRoute: typeof ProgrammesRoute
@@ -180,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -208,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officer': {
+      id: '/officer'
+      path: '/officer'
+      fullPath: '/officer'
+      preLoaderRoute: typeof OfficerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payments': {
@@ -252,15 +312,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubmitApplicationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/officer/': {
+      id: '/officer/'
+      path: '/'
+      fullPath: '/officer/'
+      preLoaderRoute: typeof OfficerIndexRouteImport
+      parentRoute: typeof OfficerRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface OfficerRouteChildren {
+  OfficerIndexRoute: typeof OfficerIndexRoute
+}
+
+const OfficerRouteChildren: OfficerRouteChildren = {
+  OfficerIndexRoute: OfficerIndexRoute,
+}
+
+const OfficerRouteWithChildren =
+  OfficerRoute._addFileChildren(OfficerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   CoursesRoute: CoursesRoute,
   DashboardRoute: DashboardRoute,
   EducationRoute: EducationRoute,
   LoginRoute: LoginRoute,
+  OfficerRoute: OfficerRouteWithChildren,
   PaymentsRoute: PaymentsRoute,
   PersonalInfoRoute: PersonalInfoRoute,
   ProgrammesRoute: ProgrammesRoute,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Eye, EyeOff } from 'lucide-react';
 import { useLogin } from '../lib/use-auth';
+import { ROLE_HOME } from '../lib/roles';
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -24,8 +25,8 @@ export function LoginPage() {
         password,
       },
       {
-        onSuccess: () => {
-          navigate({ to: '/dashboard' });
+        onSuccess: (role) => {
+          navigate({ to: ROLE_HOME[role] as any });
         },
       }
     );
