@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { LogOut, House, User, BookOpen, DollarSign, LockKeyholeOpen, Check, BookText, Send , Menu , CircleHelp } from 'lucide-react';
+import {
+  LogOut,
+  House,
+  User,
+  BookOpen,
+  DollarSign,
+  LockKeyholeOpen,
+  Check,
+  BookText,
+  Send,
+  Menu,
+  CircleHelp,
+  Loader2,
+} from 'lucide-react';
+import { usePersonalDetails, useSavePersonalDetails } from '../lib/personal-api';
+import type { PersonalDetails } from '../lib/personal-api';
 
 export const Route = createFileRoute('/personal-info')({
   component: RouteComponent,
@@ -19,6 +34,10 @@ const PROGRESS_STEPS = [
 function RouteComponent() {
   const navigate = useNavigate();
 
+  // Integrated API hooks
+  const { data: apiData, isLoading, isError } = usePersonalDetails();
+  const saveDetailsMutation = useSavePersonalDetails();
+
   const NAV = [
     { label: 'Welcome Page', icon: <House />, path: '/dashboard' },
     { label: 'Personal Information', icon: <User />, path: '/personal-info', active: true },
@@ -28,12 +47,12 @@ function RouteComponent() {
     { label: 'Change Password', icon: <LockKeyholeOpen /> },
   ];
 
-  const [form, setForm] = useState({
-    firstName: 'KAUTHAR',
-    middleName: 'PONGWA',
-    lastName: 'NASSOR',
-    gender: 'Female',
-    phoneNumber: '0712531973',
+  const [form, setForm] = useState<PersonalDetails>({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    gender: '',
+    phoneNumber: '',
     zanzibarId: '',
     nida: '',
     passportNumber: '',
@@ -43,22 +62,63 @@ function RouteComponent() {
     kinRelationship: '',
   });
 
+  // Populate form state when API data finishes fetching
+  useEffect(() => {
+    if (apiData) {
+      setForm({
+        firstName: apiData.firstName || '',
+        middleName: apiData.middleName || '',
+        lastName: apiData.lastName || '',
+        gender: apiData.gender || '',
+        phoneNumber: apiData.phoneNumber || '',
+        zanzibarId: apiData.zanzibarId || '',
+        nida: apiData.nida || '',
+        passportNumber: apiData.passportNumber || '',
+        isEmployed: apiData.isEmployed || '',
+        kinName: apiData.kinName || '',
+        kinPhone: apiData.kinPhone || '',
+        kinRelationship: apiData.kinRelationship || '',
+      });
+    }
+  }, [apiData]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({ to: '/payments' as any });
+    try {
+      await saveDetailsMutation.mutateAsync(form);
+      navigate({ to: '/payments' as any });
+    } catch (error) {
+      console.error('Failed to save personal details:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-green-200 flex items-center justify-center text-xs">
+        <div className="flex items-center gap-2 font-semibold text-gray-700 bg-white p-4 rounded shadow">
+          <Loader2 className="w-5 h-5 animate-spin text-slate-800" />
+          Loading Personal Details...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex-1 bg-green-200 flex flex-col text-xs">
       {/* Top Bar */}
-    
       <header className="bg-purple-200 text-white px-4 py-3 flex justify-between items-center shrink-0">
-               <div className="flex items-center gap-3"><Menu className="w-5 h-5 cursor-pointer" /><span className="font-bold text-sm">ICHAS Admission</span></div>
-                <div className="flex items-center gap-3"><CircleHelp className="w-4 h-4 cursor-pointer" /><User className="w-4 h-4 cursor-pointer" /></div>
+        <div className="flex items-center gap-3">
+          <Menu className="w-5 h-5 cursor-pointer" />
+          <span className="font-bold text-sm">ICHAS Admission</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <CircleHelp className="w-4 h-4 cursor-pointer" />
+          <User className="w-4 h-4 cursor-pointer" />
+        </div>
       </header>
 
       <div className="flex flex-1">
@@ -73,7 +133,9 @@ function RouteComponent() {
             <nav className="flex flex-col gap-1 text-xs">
               {NAV.map(({ label, icon, path, active }) => {
                 const cls = `px-3 py-2.5 rounded-lg transition flex items-center gap-2 font-medium ${
-                  active ? 'bg-green-700 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  active
+                    ? 'bg-green-700 text-white font-semibold'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`;
                 return path ? (
                   <Link key={label} to={path as any} className={cls}>
@@ -100,12 +162,11 @@ function RouteComponent() {
 
         {/* Main Section */}
         <main className="flex-1 p-6 space-y-4">
-          
           {/* INTERACTIVE PROGRESS TRACKER */}
           <div className="grid grid-cols-6 gap-2 text-center">
             {PROGRESS_STEPS.map((step) => {
-              // Styling based on active / completed / pending status
-              let styleClasses = 'p-2 rounded font-semibold transition cursor-pointer flex items-center justify-center gap-1 ';
+              let styleClasses =
+                'p-2 rounded font-semibold transition cursor-pointer flex items-center justify-center gap-1 ';
               if (step.status === 'active') {
                 styleClasses += 'bg-slate-800 text-white';
               } else if (step.status === 'done') {
@@ -133,6 +194,12 @@ function RouteComponent() {
             <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
               <BookText className="w-4 h-4" /> Personal Information
             </h2>
+
+            {isError && (
+              <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded text-xs">
+                Failed to load personal information. Please fill out the form manually or refresh.
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Names */}
@@ -215,7 +282,9 @@ function RouteComponent() {
               </div>
 
               {/* Employment */}
-              <div className="bg-slate-800 text-white p-2 rounded font-semibold">Employment Information</div>
+              <div className="bg-slate-800 text-white p-2 rounded font-semibold">
+                Employment Information
+              </div>
               <div>
                 <label className="block font-semibold mb-1">Are You Employed?</label>
                 <select
@@ -231,7 +300,9 @@ function RouteComponent() {
               </div>
 
               {/* Emergency Contact */}
-              <div className="bg-slate-800 text-white p-2 rounded font-semibold">Emergency Information</div>
+              <div className="bg-slate-800 text-white p-2 rounded font-semibold">
+                Emergency Information
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">Next of Kin Name</label>
@@ -274,7 +345,14 @@ function RouteComponent() {
                 >
                   Previous
                 </button>
-                <button type="submit" className="px-5 py-2 bg-slate-800 text-white rounded font-bold">
+                <button
+                  type="submit"
+                  disabled={saveDetailsMutation.isPending}
+                  className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold flex items-center gap-2 disabled:opacity-50 transition cursor-pointer"
+                >
+                  {saveDetailsMutation.isPending && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
                   Save & Next
                 </button>
               </div>

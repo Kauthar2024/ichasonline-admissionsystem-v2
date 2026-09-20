@@ -1,10 +1,10 @@
-
-
-
 import axios from 'axios';
 
+// Changed fallback to include /api at the end
+const BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/'; 
+
 export const api = axios.create({
-  baseURL:'http://192.168.100.215:8000/api', // or your BASE_URL variable
+  baseURL: BASE_URL,
 });
 
 // Add the interceptor here

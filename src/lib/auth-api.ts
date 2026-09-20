@@ -32,7 +32,7 @@ export interface RegisterResponse {
 
 
 export const registerUser = async (data: RegisterCredentials): Promise<RegisterResponse> => {
-  const response = await api.post<RegisterResponse>('/register/', data);
+  const response = await api.post<RegisterResponse>('/auth/register/', data);
   return response.data;
 };
 export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
