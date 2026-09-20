@@ -6,7 +6,7 @@ export const Route = createFileRoute('/registration')({
   component: RegisterPage,
 });
 
-export function RegisterPage() {
+function RegisterPage() {
   const navigate = useNavigate();
   const { mutate: register, isPending, error: apiError } = useRegister();
   

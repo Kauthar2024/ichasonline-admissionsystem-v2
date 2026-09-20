@@ -8,7 +8,7 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 });
 
-export function LoginPage() {
+function LoginPage() {
   const navigate = useNavigate();
   const [indexNumber, setIndexNumber] = useState('');
   const [password, setPassword] = useState('');

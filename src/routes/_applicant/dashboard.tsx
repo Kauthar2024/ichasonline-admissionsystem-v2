@@ -24,7 +24,7 @@ const CARDS = [
   { title: 'Payment Status', val: 'Unpaid', bg: 'bg-gray-50 border-gray-200 text-gray-700', text: 'text-gray-900' },
 ];
 
-export function DashboardPage() {
+function DashboardPage() {
   const navigate = useNavigate();
 
   return (

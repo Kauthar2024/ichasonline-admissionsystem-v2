@@ -34,7 +34,7 @@ const NAV = [
   { label: 'Change Password', icon: <LockKeyholeOpen /> },
 ];
 
-export function ProgrammesPage() {
+function ProgrammesPage() {
   const navigate = useNavigate();
   const logout = useLogout();
   const [firstChoice, setFirstChoice] = useState('');

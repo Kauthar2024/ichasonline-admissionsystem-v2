@@ -40,7 +40,7 @@ const NAV = [
   { label: 'Change Password', icon: <LockKeyholeOpen /> },
 ];
 
-export function EducationPage() {
+function EducationPage() {
   const navigate = useNavigate();
   const logout = useLogout();
   const [form, setForm] = useState({ indexNumber: '', examYear: '', submitted: false });

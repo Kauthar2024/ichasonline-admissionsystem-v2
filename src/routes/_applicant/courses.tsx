@@ -5,7 +5,7 @@ export const Route = createFileRoute('/_applicant/courses')({
   component: CourseSelectionPage,
 });
 
-export function CourseSelectionPage() {
+function CourseSelectionPage() {
   const navigate = useNavigate();
   const [selectedProgramme, setSelectedProgramme] = useState('');
 
